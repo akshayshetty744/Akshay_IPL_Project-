@@ -7,7 +7,6 @@ function matches_played(matches) {
     matches.map(e => {
         if (obj[e.season]) {
             obj[e.season]++;
-            // document.getElementById("match").innerText= obj["2008"];
         }
         else {
             obj[e.season] = 1;
@@ -39,35 +38,58 @@ function match_won(matches) {
 // console.log(match_won(matches));
 
 // 3. Extra runs conceded per team in the year 2016
+function extras(deliveries, matches) {
+    let extraRuns = {}
+    let matchIDs = []
 
-// function extra_runs(deliveries, matches) {
-//     let arr = [];
-//     matches.map(e => {
-//         if (e.season == 2016) {
-//             arr.push(e.id);
-//         }
+    matches.map((e) => {
+        if (e.season === '2016') {
+            matchIDs.push(e.id)
+        }
+    })
+    deliveries.map((e) => {
+        if (matchIDs.includes(e.match_id)) {
+            extraRuns[e.bowling_team] = extraRuns[e.bowling_team] + parseInt(e.extra_runs) || parseInt(e.extra_runs)
+        }
+    })
+    return extraRuns;
+}
+// console.log(extras(deliveries, matches));
 
-//     })
-    // let extra = [];
-    // for (let i = 0; i < arr.length; i++) {
-    //     deliveries.map(e => {
-    //         if (arr[i] == e.match_id) {
-    //             if (e. ) {
-    //                 extra.push(e.extra_runs - 1);
-    //             }
+//4. Top 10 economical bowlers in the year 2015
 
-    //         }
-    //     })
-    // }
-//     // if(extra<1){
-//     // }
-//     for (let i = 0; i < extra.length; i++) {
-//         if (extra[i] > 0) {
-//             const sum = extra.reduce((a, b) => a + b, 0);
-//             return sum;
-//         }
-//     }
+function top10(matches, deliveries) {
+    let bowlerObj = {}
+    let matchID = []
+    matches.map((e) => {
+        if (e.season === '2015') {
+            matchID.push(e.id)
+        }
+    })
+    deliveries.map((e) => {
+        if (matchID.includes(e.match_id)) {
+            let bowler = e.bowler
+            if (!bowlerObj[bowler]) {
+                bowlerObj[bowler] = {}
+            }
+            bowlerObj[bowler]["runs"] = bowlerObj[bowler]["runs"] + parseInt(e.total_runs) || parseInt(e.total_runs)
+            bowlerObj[bowler]["balls"] = bowlerObj[bowler]["balls"] + 1 || 1
+            bowlerObj[bowler]["economy"] = bowlerObj[bowler]["runs"] / ((bowlerObj[bowler]["balls"]) / 6)
+        }
+    }
+    )
 
-// }
-// console.log(extra_runs(deliveries, matches));
-// // console.log(matches.length)
+    let out = []
+    for (let key in bowlerObj) {
+        out.push([bowlerObj[key]["economy"], key])
+    }
+    out.sort((a, b) => a[0] - b[0])
+    let top10Bowlers = out.slice(0, 10)
+    let obj = []
+    top10Bowlers.forEach((e) => {
+        obj.push({ player_name: e[1], economy: Math.round(e[0]) })
+
+    })
+    return obj;
+}
+console.log(top10(matches, deliveries))
